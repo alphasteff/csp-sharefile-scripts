@@ -188,7 +188,7 @@ if (Test-Path -Path $File){
 $sfClient = Get-SfClient -Name $File
 
 #Get Tenant License info
-$tenants = Send-SfRequest -Client $sfClient -Method GET -Entity Accounts -Navigation Tenants -Expand 'Preferences,Preferences/DefaultZone,UserUsage'
+$tenants = Send-SfRequest -Client $sfClient -Method GET -Entity Accounts -Navigation Tenants -Expand 'Preferences,Preferences/DefaultZone,UserUsage' | Sort-Object 'CompanyName'
 
 #Get Zone usage
 $zoneUsageUri = ('{0}/Accounts/Tenants/ZoneUsage' -f $sfClient.PrimaryDomain.Uri)
