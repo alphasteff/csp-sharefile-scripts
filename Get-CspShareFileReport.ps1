@@ -1,4 +1,4 @@
-﻿<#
+<#
     .SYNOPSIS
     Describe purpose of "sumfunc" in 1-2 sentences.
 
@@ -131,20 +131,22 @@ function Add-TenantTotals {
 
 
   param (
+    [Parameter(Mandatory=$true,HelpMessage='Licenses Status required')]
+    [string]$Status,
     [Parameter(Mandatory=$true,HelpMessage='Tenant Count required')]
-    [int]$inCount,
+    [long]$inCount,
     [Parameter(Mandatory=$true,HelpMessage='Total Licenses Used required')]
-    [int]$inUsage,
+    [long]$inUsage,
     [Parameter(Mandatory=$true,HelpMessage='Total Zone Usage required')]
-    [int]$inStorage
+    [long]$inStorage
   )
   
   [object]$objTotals = New-Object -TypeName PSObject
-  Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Account Name' -Value ('Total Paid Licenses ({0})' -f $inCount)
+  Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Account Name' -Value ("Total $Status Licenses ({0})" -f $inCount)
   Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Licenses Used' -Value $inUsage
   Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Storage Zone' -Value ''
   Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Zone Usage (Bytes)' -Value $inStorage
-  Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Status' -Value 'Paid'
+  Add-Member -InputObject $objTotals -MemberType NoteProperty -Name 'Status' -Value $Status
   
   $tenantReport.Add($objTotals)
 }
@@ -157,7 +159,7 @@ if ( Get-PSSnapin -Registered | Select-String -Pattern ShareFile) {
 }
 
 # Ensure the ShareFile PowerShell Snap-in is loaded
-if ( (Get-PSSnapin -Name ShareFile -ErrorAction SilentlyContinue) -eq $null )
+if ( $null -eq (Get-PSSnapin -Name ShareFile -ErrorAction SilentlyContinue) )
 {
   Write-Verbose -Message 'Adding ShareFile snapin'
   try {
@@ -228,7 +230,7 @@ foreach ( $tenant in $tenantInfo) {
 }
 
 $tenantReport = {$tenantInfo}.Invoke()
-Add-TenantTotals -inCount $paidCount -inUsage $totalPaid -inStorage $totalPaidStorage
-Add-TenantTotals -inCount $trialCount -inUsage $totalTrial -inStorage $totalTrialStorage
+Add-TenantTotals -Status 'Paid'  -inCount $paidCount -inUsage $totalPaid -inStorage $totalPaidStorage
+Add-TenantTotals -Status 'Trial' -inCount $trialCount -inUsage $totalTrial -inStorage $totalTrialStorage
 
 Write-Output -InputObject ($tenantReport)
